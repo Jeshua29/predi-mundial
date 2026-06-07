@@ -1,0 +1,165 @@
+*{
+
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,sans-serif;
+
+}
+
+body{
+
+    background-image:url("img/log-world-cup.png");
+    background-repeat:repeat;
+    background-attachment:fixed;
+
+}
+
+.landing-overlay{
+
+    min-height:100vh;
+
+    background:rgba(255,255,255,.88);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:20px;
+
+}
+
+.landing-card{
+
+    width:100%;
+    max-width:500px;
+
+    background:white;
+
+    border-radius:25px;
+
+    padding:45px;
+
+    text-align:center;
+
+    box-shadow:0 20px 45px rgba(0,0,0,.15);
+
+}
+
+.logo-copa{
+
+    width:90px;
+
+    margin-bottom:15px;
+
+}
+
+h1{
+
+    color:#111827;
+
+    margin-bottom:5px;
+
+}
+
+h2{
+
+    color:#2563eb;
+
+    margin-bottom:20px;
+
+}
+
+.descripcion{
+
+    color:#666;
+
+    line-height:1.5;
+
+    margin-bottom:30px;
+
+}
+
+.input-container{
+
+    text-align:left;
+
+    margin-bottom:20px;
+
+}
+
+.input-container label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+.input-container input{
+
+    width:100%;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    border:2px solid #ddd;
+
+    outline:none;
+
+    transition:.25s;
+
+}
+
+.input-container input:focus{
+
+    border-color:#2563eb;
+
+}
+
+.estado{
+
+    margin:15px 0;
+
+    color:#666;
+
+    font-size:14px;
+
+    min-height:20px;
+
+}
+
+#btnComenzar{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+#btnComenzar:hover{
+
+    transform:scale(1.02);
+
+}

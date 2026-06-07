@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>World Predictor 2026</title>
+
+    <link rel="stylesheet" href="css.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="overlay">
+      <nav>
+        <div class="logo">
+          <img src="img/mundial-logo.png" />
+
+          <div>
+            <h1>Predicción Mundial</h1>
+
+            <span>el que gana, ghana</span>
+          </div>
+        </div>
+        <div class="toggle">
+          <button id="btnGrupos" class="active">Grupos</button>
+          <button id="btn16vos">16vos</button>
+          <button id="btnRanking">Ranking</button>
+        </div>
+      </nav>
+       <audio id="musicaFondo" loop>
+    <source src="audio/musica.mp3" type="audio/mpeg">
+</audio>
+
+<div class="music-container">
+
+    <button id="btnMusica">
+        🎵 Música
+    </button>
+
+    <span id="nombreCancion">
+        Sin reproducir
+    </span>
+
+</div>
+      
+      <div id="mensajeExito" class="mensaje">
+        ✅ Predicción enviada correctamente.
+      </div>
+
+      <!-- ===================== -->
+      <!-- VISTA DE GRUPOS -->
+      <!-- ===================== -->
+
+      <div id="groupsView">
+        <section class="top-info">
+          <div class="card info">
+            <h3>Tu progreso</h3>
+
+            <div class="progress">
+              <div id="progressBar"></div>
+            </div>
+
+            <p id="progressText">0 / 12 grupos completos</p>
+          </div>
+
+          <div class="card countdown-card">
+            <div class="count-title">Cierre de predicciones</div>
+
+            <div class="count-grid">
+              <div>
+                <span id="dias">00</span>
+
+                <small>DÍAS</small>
+              </div>
+
+              <div>
+                <span id="horas">00</span>
+
+                <small>HORAS</small>
+              </div>
+
+              <div>
+                <span id="minutos">00</span>
+
+                <small>MINUTOS</small>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="groupsContainer"></section>
+
+        <div class="submit-container">
+          <button id="btnEnviar" disabled>Completa todos los grupos</button>
+        </div>
+      </div>
+
+      <!-- ===================== -->
+      <!-- VISTA DE RANKING -->
+      <!-- ===================== -->
+
+      <section id="rankingView" style="display: none">
+        <div class="ranking-top">
+          <div class="card">
+            <h2>📜 Reglas</h2>
+
+            <ul>
+              <li>2000₡ para participar</li>
+              <li>el que gana, gana(osea se lleva todo)</li>
+              <li>Primero se predicen toda la <b>fase de grupos</b>, a partir de <b>dieciseisavos</b>
+                cuando se tengan los partidos reales se abre esa sección para predecir de esa fase hasta la final
+              </li>
+              <li>
+                Posición exacta: <b>3 pts</b> ej: Si colocas a México de primero
+                y aciertas son 3pts
+              </li>
+
+              <li>
+                Clasificado correcto: <b>1 pt</b> ej: Si colocas a Méchico de
+                primero pero pasa de segundo
+              </li>
+
+              <li>
+                Máximo por grupo: <b>12 pts</b> en caso de advinar las
+                posiciones correcta de todos (solo pa tryhards🔥)
+              </li>
+              
+              <li>el que quede de ultimo es gay</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h2>💰 Plata acumulada</h2>
+
+            <div class="money">₡0</div>
+
+            <small> Sin participantes </small>
+          </div>
+        </div>
+
+        <div class="card ranking-card">
+          <h2>🏆 Ranking</h2>
+          <div class="ranking-header">
+            <span>POS</span>
+
+            <span>JUGADOR</span>
+
+            <span>PTS</span>
+          </div>
+          <div id="rankingContainer"></div>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="predictor.js"></script>
+  </body>
+</html>
