@@ -2,7 +2,7 @@ import { db } from "./firebase.js";
 
 import {
     ref,
-    set
+    update
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 const claveAdmin = prompt("Clave de Administrador");
 
@@ -89,8 +89,6 @@ const resultados = {};
 const container =
 document.getElementById("groupsContainer");
 
-const totalGrupos =
-Object.keys(grupos).length;
 
 crearGrupos();
 actualizarBoton();
@@ -208,30 +206,29 @@ function actualizarCard(grupo, card) {
 
 function actualizarBoton() {
 
-    let completos = 0;
+    let gruposCompletos = 0;
 
     for(let grupo in resultados){
 
         if(resultados[grupo].length === 4){
-            completos++;
+            gruposCompletos++;
         }
 
     }
 
-    const boton =
-    document.getElementById("btnGuardarResultados");
+    const boton = document.getElementById("btnGuardarResultados");
 
-    if(completos === totalGrupos){
+    if(gruposCompletos > 0){
 
         boton.disabled = false;
         boton.classList.add("enabled");
-        boton.innerText = "Guardar resultados";
+        boton.innerText = `Guardar ${gruposCompletos} grupo(s)`;
 
     }else{
 
         boton.disabled = true;
         boton.classList.remove("enabled");
-        boton.innerText = "Completa todos los grupos";
+        boton.innerText = "Selecciona al menos un grupo completo";
 
     }
 
@@ -243,12 +240,27 @@ document
 
     try {
 
-        await set(
-            ref(db, "resultados"),
-            resultados
+        const resultadosParaGuardar = {};
+
+        for(let grupo in resultados){
+
+            if(resultados[grupo].length === 4){
+
+                resultadosParaGuardar[`resultados/${grupo}`] = {
+                    posiciones: resultados[grupo],
+                    actualizadoEn: new Date().toISOString()
+                };
+
+            }
+
+        }
+
+        await update(
+            ref(db),
+            resultadosParaGuardar
         );
 
-        alert("Resultados guardados correctamente");
+        alert("Resultados actualizados correctamente");
 
     } catch(error) {
 
