@@ -458,6 +458,10 @@ function calcularPuntosGrupo(prediccion, resultado) {
     }
   });
 
+  if (prediccion[2] === resultado[2]) {
+    puntos += 3;
+  }
+
   return puntos;
 }
 cargarRanking();
