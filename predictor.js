@@ -447,10 +447,13 @@ async function cargarRanking() {
 function calcularPuntosGrupo(prediccion, resultado) {
   let puntos = 0;
 
-  prediccion.forEach((equipo, posicion) => {
-    if (resultado[posicion] === equipo) {
+  const clasificadosPrediccion = prediccion.slice(0, 2);
+  const clasificadosResultado = resultado.slice(0, 2);
+
+  clasificadosPrediccion.forEach((equipo, posicion) => {
+    if (clasificadosResultado[posicion] === equipo) {
       puntos += 3;
-    } else if (resultado.includes(equipo)) {
+    } else if (clasificadosResultado.includes(equipo)) {
       puntos += 1;
     }
   });
