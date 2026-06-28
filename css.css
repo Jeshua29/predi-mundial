@@ -443,7 +443,8 @@ nav::after{
 
 }
 
-#btnEnviar{
+#btnEnviar,
+#btnEnviar16avos{
 
     padding:15px 40px;
 
@@ -465,14 +466,19 @@ nav::after{
 
 }
 
-#btnEnviar.enabled{
+#btnEnviar.enabled,
+#btnEnviar16avos.enabled{
 
     background:#2ecc71;
 
     cursor:pointer;
 
 }
-
+#btnEnviar:disabled,
+#btnEnviar16avos:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}
 #btnEnviar.enabled:hover{
 
     transform:scale(1.05);
@@ -739,6 +745,98 @@ nav::after{
     text-overflow: ellipsis;
     white-space: nowrap;
 
+}
+/* ===================== */
+/* PARTIDOS 16AVOS */
+/* ===================== */
+
+.dieciseisavos-section {
+  margin-top: 30px;
+}
+
+.fase-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 24px;
+}
+
+.partidos-16-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.bracket-match {
+  background: rgba(10, 15, 35, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #b6ff00;
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.match-header small {
+  color: #b7d9ff;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.bracket-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px;
+  background: rgba(20, 25, 50, 0.75);
+  border-radius: 6px;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.bracket-team:hover {
+  background: rgba(20, 184, 166, 0.28);
+}
+
+.bracket-team.selected {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+.bracket-team img {
+  width: 32px;
+  height: 22px;
+  object-fit: cover;
+}
+
+.versus {
+  color: #8fb3ff;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  margin: 8px 0;
+}
+
+@media (max-width: 1100px) {
+  .partidos-16-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .partidos-16-container {
+    grid-template-columns: 1fr;
+  }
 }
 @media(max-width:800px){
 
