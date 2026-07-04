@@ -636,7 +636,10 @@ function calcularPuntosGrupo(prediccion, resultado) {
 
   return puntos;
 }
-
+function normalizarCodigo(codigo) {
+  if (codigo === "eng") return "gb";
+  return codigo;
+}
 function calcularPuntos16avos(prediccion16, resultados16) {
   let puntos = 0;
 
@@ -645,7 +648,10 @@ function calcularPuntos16avos(prediccion16, resultados16) {
     const ganadorReal =
       typeof resultado === "string" ? resultado : resultado.ganador;
 
-    if (prediccion16[partidoId] === ganadorReal) {
+    if (
+      normalizarCodigo(prediccion16[partidoId]) ===
+      normalizarCodigo(ganadorReal)
+    ) {
       puntos += 3;
     }
   }
