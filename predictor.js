@@ -10,7 +10,7 @@ import {
 const usuario = localStorage.getItem("nombreUsuario");
 
 const fechaCierre = new Date("2026-06-11T13:00:00-06:00");
-const fechaCierre16avos = new Date("2026-06-28T12:59:59-06:00");
+const fechaCierre16avos = new Date("2026-07-04T10:59:59-06:00");
 
 if (usuario === null) {
   window.location.href = "index.html";
@@ -120,6 +120,19 @@ const partidos16avos = [
   { id: "M85", equipos: ["ch", "dz"], detalle: "Suiza vs Argelia" },
   { id: "M87", equipos: ["co", "gh"], detalle: "Colombia vs Ghana" },
 ];
+const partidosOctavos = [
+  { id: "M89", equipos: ["ca", "ma"], detalle: "Canadá vs Marruecos" },
+  { id: "M90", equipos: ["py", "fr"], detalle: "Paraguay vs Francia" },
+
+  { id: "M91", equipos: ["br", "no"], detalle: "Brasil vs Noruega" },
+  { id: "M92", equipos: ["mx", "eng"], detalle: "México vs Inglaterra" },
+
+  { id: "M93", equipos: ["pt", "es"], detalle: "Portugal vs España" },
+  { id: "M94", equipos: ["us", "be"], detalle: "Estados Unidos vs Bélgica" },
+
+  { id: "M95", equipos: ["ar", "eg"], detalle: "Argentina vs Egipto" },
+  { id: "M96", equipos: ["ch", "co"], detalle: "Suiza vs Colombia" },
+];
 
 const predicciones = {};
 const predicciones16avos = {};
@@ -131,7 +144,7 @@ const container = document.getElementById("groupsContainer");
 const totalGrupos = Object.keys(grupos).length;
 
 crearGrupos();
-crearPartidos16avos();
+crearPartidosOctavos();
 actualizarBarra();
 actualizarBoton16avos();
 cargarPrediccionUsuario();
@@ -294,11 +307,11 @@ async function cargarPrediccionUsuario() {
       }
     }
 
-    if (datos.dieciseisavos) {
+    if (datos.octavos) {
       tienePrediccion16avosGuardada = true;
 
-      for (let partidoId in datos.dieciseisavos) {
-        predicciones16avos[partidoId] = datos.dieciseisavos[partidoId];
+      for (let partidoId in datos.octavos) {
+        predicciones16avos[partidoId] = datos.octavos[partidoId];
 
         const card = document.querySelector(
           `.partido-16-card[data-partido="${partidoId}"]`,
@@ -331,7 +344,7 @@ async function cargarPrediccionUsuario() {
     const boton = document.getElementById("btnEnviar16avos");
     boton.disabled = true;
     boton.classList.remove("enabled");
-    boton.innerText = "Predicciones de 16avos cerradas";
+    boton.innerText = "Predicciones de 8avos cerradas";
   }
 }
 
@@ -365,11 +378,11 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
   }
 });
 
-function crearPartidos16avos() {
+function crearPartidosOctavos() {
   const container16 = document.getElementById("partidos16Container");
   container16.innerHTML = "";
 
-  partidos16avos.forEach((partido) => {
+  partidosOctavos.forEach((partido) => {
     predicciones16avos[partido.id] = "";
 
     const equipo1 = obtenerEquipoPorCodigo(partido.equipos[0]);
@@ -430,7 +443,7 @@ function actualizarPartido16avos(partidoId, card) {
 }
 
 function actualizarBoton16avos() {
-  const totalPartidos = partidos16avos.length;
+  const totalPartidos = partidosOctavos.length;
 
   const completos = Object.values(predicciones16avos).filter(
     (ganador) => ganador !== "",
@@ -442,8 +455,8 @@ function actualizarBoton16avos() {
     boton.disabled = false;
     boton.classList.add("enabled");
     boton.innerText = tienePrediccion16avosGuardada
-      ? "Actualizar predicción de 16avos"
-      : "Enviar predicción de 16avos";
+      ? "Actualizar predicción de 8avos"
+      : "Enviar predicción de 8avos";
   } else {
     boton.disabled = true;
     boton.classList.remove("enabled");
@@ -451,50 +464,52 @@ function actualizarBoton16avos() {
   }
 }
 
-document.getElementById("btnEnviar16avos").addEventListener("click", async () => {
-  try {
-    if (predicciones16avosCerradas()) {
-      alert("Las predicciones de 16avos ya están cerradas.");
-      return;
+document
+  .getElementById("btnEnviar16avos")
+  .addEventListener("click", async () => {
+    try {
+      if (predicciones16avosCerradas()) {
+        alert("Las predicciones de 8avos ya están cerradas.");
+        return;
+      }
+
+      const totalPartidos = partidosOctavos.length;
+      const completos = Object.values(predicciones16avos).filter(
+        (ganador) => ganador !== "",
+      ).length;
+
+      if (completos !== totalPartidos) {
+        alert("Debes completar todos los partidos de 8avos.");
+        return;
+      }
+
+      const usuarioKey = usuario.toLowerCase();
+      const usuarioRef = ref(db, "predicciones/" + usuarioKey);
+
+      const snapshot = await get(usuarioRef);
+      const datosActuales = snapshot.exists() ? snapshot.val() : {};
+
+      await set(usuarioRef, {
+        ...datosActuales,
+        nombre: usuario,
+        fecha: new Date().toISOString(),
+        octavos: predicciones16avos,
+      });
+
+      tienePrediccion16avosGuardada = true;
+      actualizarBoton16avos();
+
+      const mensaje = document.getElementById("mensajeExito16avos");
+      mensaje.classList.add("show");
+
+      setTimeout(() => {
+        mensaje.classList.remove("show");
+      }, 3000);
+    } catch (error) {
+      console.error("Error al guardar predicción de 8avos:", error);
+      alert("Error al guardar la predicción de 8avos. Revisa la consola.");
     }
-
-    const totalPartidos = partidos16avos.length;
-    const completos = Object.values(predicciones16avos).filter(
-      (ganador) => ganador !== "",
-    ).length;
-
-    if (completos !== totalPartidos) {
-      alert("Debes completar todos los partidos de 16avos.");
-      return;
-    }
-
-    const usuarioKey = usuario.toLowerCase();
-    const usuarioRef = ref(db, "predicciones/" + usuarioKey);
-
-    const snapshot = await get(usuarioRef);
-    const datosActuales = snapshot.exists() ? snapshot.val() : {};
-
-    await set(usuarioRef, {
-      ...datosActuales,
-      nombre: usuario,
-      fecha: new Date().toISOString(),
-      dieciseisavos: predicciones16avos,
-    });
-
-    tienePrediccion16avosGuardada = true;
-    actualizarBoton16avos();
-
-    const mensaje = document.getElementById("mensajeExito16avos");
-    mensaje.classList.add("show");
-
-    setTimeout(() => {
-      mensaje.classList.remove("show");
-    }, 3000);
-  } catch (error) {
-    console.error("Error al guardar predicción de 16avos:", error);
-    alert("Error al guardar la predicción de 16avos. Revisa la consola.");
-  }
-});
+  });
 
 function actualizarContador() {
   const ahora = new Date();
@@ -514,8 +529,12 @@ function actualizarContador() {
   const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
 
   document.getElementById("dias").innerText = dias.toString().padStart(2, "0");
-  document.getElementById("horas").innerText = horas.toString().padStart(2, "0");
-  document.getElementById("minutos").innerText = minutos.toString().padStart(2, "0");
+  document.getElementById("horas").innerText = horas
+    .toString()
+    .padStart(2, "0");
+  document.getElementById("minutos").innerText = minutos
+    .toString()
+    .padStart(2, "0");
 }
 
 function actualizarContador16avos() {
@@ -535,9 +554,15 @@ function actualizarContador16avos() {
   );
   const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
 
-  document.getElementById("dias16").innerText = dias.toString().padStart(2, "0");
-  document.getElementById("horas16").innerText = horas.toString().padStart(2, "0");
-  document.getElementById("minutos16").innerText = minutos.toString().padStart(2, "0");
+  document.getElementById("dias16").innerText = dias
+    .toString()
+    .padStart(2, "0");
+  document.getElementById("horas16").innerText = horas
+    .toString()
+    .padStart(2, "0");
+  document.getElementById("minutos16").innerText = minutos
+    .toString()
+    .padStart(2, "0");
 }
 
 async function cargarRanking() {
@@ -566,10 +591,7 @@ async function cargarRanking() {
     let puntosTotales = 0;
 
     for (let grupo in grupos) {
-      if (
-        resultados[grupo]?.posiciones &&
-        prediccionUsuario.grupos?.[grupo]
-      ) {
+      if (resultados[grupo]?.posiciones && prediccionUsuario.grupos?.[grupo]) {
         puntosTotales += calcularPuntosGrupo(
           prediccionUsuario.grupos[grupo],
           resultados[grupo].posiciones,
@@ -584,6 +606,12 @@ async function cargarRanking() {
       );
     }
 
+    if (resultados.octavos && prediccionUsuario.octavos) {
+      puntosTotales += calcularPuntos16avos(
+        prediccionUsuario.octavos,
+        resultados.octavos,
+      );
+    }
     ranking.push({
       nombre: prediccionUsuario.nombre,
       puntos: puntosTotales,

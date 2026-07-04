@@ -87,38 +87,30 @@ const grupos = {
   ],
 };
 
-const partidos16avos = [
-  { id: "M74", equipos: ["de", "py"], detalle: "Alemania vs Paraguay" },
-  { id: "M77", equipos: ["fr", "se"], detalle: "Francia vs Suecia" },
-  { id: "M73", equipos: ["za", "ca"], detalle: "Sudáfrica vs Canadá" },
-  { id: "M75", equipos: ["nl", "ma"], detalle: "Países Bajos vs Marruecos" },
+const partidosOctavos = [
+  { id: "M89", equipos: ["ca", "ma"], detalle: "Canadá vs Marruecos" },
+  { id: "M90", equipos: ["py", "fr"], detalle: "Paraguay vs Francia" },
 
-  { id: "M83", equipos: ["pt", "hr"], detalle: "Portugal vs Croacia" },
-  { id: "M84", equipos: ["es", "at"], detalle: "España vs Austria" },
-  { id: "M81", equipos: ["us", "ba"], detalle: "Estados Unidos vs Bosnia" },
-  { id: "M82", equipos: ["be", "sn"], detalle: "Bélgica vs Senegal" },
+  { id: "M91", equipos: ["br", "no"], detalle: "Brasil vs Noruega" },
+  { id: "M92", equipos: ["mx", "eng"], detalle: "México vs Inglaterra" },
 
-  { id: "M76", equipos: ["br", "jp"], detalle: "Brasil vs Japón" },
-  { id: "M78", equipos: ["ci", "no"], detalle: "Costa de Marfil vs Noruega" },
-  { id: "M79", equipos: ["mx", "ec"], detalle: "México vs Ecuador" },
-  { id: "M80", equipos: ["eng", "cd"], detalle: "Inglaterra vs RD Congo" },
+  { id: "M93", equipos: ["pt", "es"], detalle: "Portugal vs España" },
+  { id: "M94", equipos: ["us", "be"], detalle: "Estados Unidos vs Bélgica" },
 
-  { id: "M86", equipos: ["ar", "cv"], detalle: "Argentina vs Cabo Verde" },
-  { id: "M88", equipos: ["au", "eg"], detalle: "Australia vs Egipto" },
-  { id: "M85", equipos: ["ch", "dz"], detalle: "Suiza vs Argelia" },
-  { id: "M87", equipos: ["co", "gh"], detalle: "Colombia vs Ghana" },
+  { id: "M95", equipos: ["ar", "eg"], detalle: "Argentina vs Egipto" },
+  { id: "M96", equipos: ["ch", "co"], detalle: "Suiza vs Colombia" },
 ];
 
 const resultados = {};
-const resultados16avos = {};
+const resultadosOctavos = {};
 
 const container = document.getElementById("groupsContainer");
-const container16 = document.getElementById("partidos16AdminContainer");
+const containerOctavos = document.getElementById("partidos16AdminContainer");
 
 crearGrupos();
-crearPartidos16avosAdmin();
+crearPartidosOctavosAdmin();
 actualizarBoton();
-actualizarBoton16avos();
+actualizarBotonOctavos();
 
 function obtenerEquipoPorCodigo(codigo) {
   if (codigo === "eng") {
@@ -162,9 +154,7 @@ function crearGrupos() {
 
     grupos[letra].forEach((equipo) => {
       const fila = document.createElement("div");
-
       fila.className = "team";
-
       fila.dataset.codigo = equipo.codigoInterno || equipo.codigo;
 
       fila.innerHTML = `
@@ -185,8 +175,7 @@ function crearGrupos() {
 }
 
 function manejarSeleccion(grupo, codigo, card) {
-  let seleccion = resultados[grupo];
-
+  const seleccion = resultados[grupo];
   const indice = seleccion.indexOf(codigo);
 
   if (indice !== -1) {
@@ -276,14 +265,14 @@ document
   });
 
 /* ===================== */
-/* RESULTADOS DE 16AVOS */
+/* RESULTADOS DE 8VOS */
 /* ===================== */
 
-function crearPartidos16avosAdmin() {
-  container16.innerHTML = "";
+function crearPartidosOctavosAdmin() {
+  containerOctavos.innerHTML = "";
 
-  partidos16avos.forEach((partido) => {
-    resultados16avos[partido.id] = "";
+  partidosOctavos.forEach((partido) => {
+    resultadosOctavos[partido.id] = "";
 
     const equipo1 = obtenerEquipoPorCodigo(partido.equipos[0]);
     const equipo2 = obtenerEquipoPorCodigo(partido.equipos[1]);
@@ -313,23 +302,23 @@ function crearPartidos16avosAdmin() {
 
     card.querySelectorAll(".bracket-team").forEach((equipo) => {
       equipo.addEventListener("click", () => {
-        manejarSeleccion16avos(partido.id, equipo.dataset.codigo, card);
+        manejarSeleccionOctavos(partido.id, equipo.dataset.codigo, card);
       });
     });
 
-    container16.appendChild(card);
+    containerOctavos.appendChild(card);
   });
 }
 
-function manejarSeleccion16avos(partidoId, codigo, card) {
-  resultados16avos[partidoId] = codigo;
+function manejarSeleccionOctavos(partidoId, codigo, card) {
+  resultadosOctavos[partidoId] = codigo;
 
-  actualizarPartido16avos(partidoId, card);
-  actualizarBoton16avos();
+  actualizarPartidoOctavos(partidoId, card);
+  actualizarBotonOctavos();
 }
 
-function actualizarPartido16avos(partidoId, card) {
-  const seleccionado = resultados16avos[partidoId];
+function actualizarPartidoOctavos(partidoId, card) {
+  const seleccionado = resultadosOctavos[partidoId];
 
   card.querySelectorAll(".bracket-team").forEach((equipo) => {
     if (equipo.dataset.codigo === seleccionado) {
@@ -340,8 +329,8 @@ function actualizarPartido16avos(partidoId, card) {
   });
 }
 
-function actualizarBoton16avos() {
-  const completos = Object.values(resultados16avos).filter(
+function actualizarBotonOctavos() {
+  const completos = Object.values(resultadosOctavos).filter(
     (ganador) => ganador !== "",
   ).length;
 
@@ -350,11 +339,11 @@ function actualizarBoton16avos() {
   if (completos > 0) {
     boton.disabled = false;
     boton.classList.add("enabled");
-    boton.innerText = `Guardar ${completos} resultado(s) de 16avos`;
+    boton.innerText = `Guardar ${completos} resultado(s) de 8vos`;
   } else {
     boton.disabled = true;
     boton.classList.remove("enabled");
-    boton.innerText = "Selecciona al menos un resultado de 16avos";
+    boton.innerText = "Selecciona al menos un resultado de 8vos";
   }
 }
 
@@ -364,18 +353,18 @@ document
     try {
       const resultadosParaGuardar = {};
 
-      for (let partidoId in resultados16avos) {
-        if (resultados16avos[partidoId] !== "") {
-          resultadosParaGuardar[`resultados/dieciseisavos/${partidoId}`] =
-            resultados16avos[partidoId];
+      for (let partidoId in resultadosOctavos) {
+        if (resultadosOctavos[partidoId] !== "") {
+          resultadosParaGuardar[`resultados/octavos/${partidoId}`] =
+            resultadosOctavos[partidoId];
         }
       }
 
       await update(ref(db), resultadosParaGuardar);
 
-      alert("Resultados de 16avos actualizados correctamente");
+      alert("Resultados de 8vos actualizados correctamente");
     } catch (error) {
-      console.error("Error al guardar resultados de 16avos:", error);
-      alert("Error al guardar resultados de 16avos");
+      console.error("Error al guardar resultados de 8vos:", error);
+      alert("Error al guardar resultados de 8vos");
     }
   });
