@@ -10,7 +10,7 @@ import {
 const usuario = localStorage.getItem("nombreUsuario");
 
 const fechaCierre = new Date("2026-06-11T13:00:00-06:00");
-const fechaCierre16avos = new Date("2026-07-04T10:59:59-06:00");
+const fechaCierre16avos = new Date("2026-07-04T12:28:59-06:00");
 
 if (usuario === null) {
   window.location.href = "index.html";
