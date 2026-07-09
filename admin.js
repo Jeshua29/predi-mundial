@@ -87,30 +87,25 @@ const grupos = {
   ],
 };
 
-const partidosOctavos = [
-  { id: "M89", equipos: ["ca", "ma"], detalle: "Canadá vs Marruecos" },
-  { id: "M90", equipos: ["py", "fr"], detalle: "Paraguay vs Francia" },
-
-  { id: "M91", equipos: ["br", "no"], detalle: "Brasil vs Noruega" },
-  { id: "M92", equipos: ["mx", "eng"], detalle: "México vs Inglaterra" },
-
-  { id: "M93", equipos: ["pt", "es"], detalle: "Portugal vs España" },
-  { id: "M94", equipos: ["us", "be"], detalle: "Estados Unidos vs Bélgica" },
-
-  { id: "M95", equipos: ["ar", "eg"], detalle: "Argentina vs Egipto" },
-  { id: "M96", equipos: ["ch", "co"], detalle: "Suiza vs Colombia" },
+// TODO: reemplaza estos 4 partidos por los cruces reales de cuartos de final
+// (deben coincidir exactamente con los de predictor.js)
+const partidosCuartos = [
+  { id: "M97", equipos: ["ma", "fr"], detalle: "Ganador M89 vs Ganador M90" },
+  { id: "M98", equipos: ["no", "eng"], detalle: "Ganador M91 vs Ganador M92" },
+  { id: "M99", equipos: ["es", "be"], detalle: "Ganador M93 vs Ganador M94" },
+  { id: "M100", equipos: ["ar", "ch"], detalle: "Ganador M95 vs Ganador M96" },
 ];
 
 const resultados = {};
-const resultadosOctavos = {};
+const resultadosCuartos = {};
 
 const container = document.getElementById("groupsContainer");
-const containerOctavos = document.getElementById("partidos16AdminContainer");
+const containerCuartos = document.getElementById("partidos16AdminContainer");
 
 crearGrupos();
-crearPartidosOctavosAdmin();
+crearPartidosCuartosAdmin();
 actualizarBoton();
-actualizarBotonOctavos();
+actualizarBotonCuartos();
 
 function obtenerEquipoPorCodigo(codigo) {
   if (codigo === "eng") {
@@ -265,14 +260,14 @@ document
   });
 
 /* ===================== */
-/* RESULTADOS DE 8VOS */
+/* RESULTADOS DE CUARTOS */
 /* ===================== */
 
-function crearPartidosOctavosAdmin() {
-  containerOctavos.innerHTML = "";
+function crearPartidosCuartosAdmin() {
+  containerCuartos.innerHTML = "";
 
-  partidosOctavos.forEach((partido) => {
-    resultadosOctavos[partido.id] = "";
+  partidosCuartos.forEach((partido) => {
+    resultadosCuartos[partido.id] = "";
 
     const equipo1 = obtenerEquipoPorCodigo(partido.equipos[0]);
     const equipo2 = obtenerEquipoPorCodigo(partido.equipos[1]);
@@ -302,23 +297,23 @@ function crearPartidosOctavosAdmin() {
 
     card.querySelectorAll(".bracket-team").forEach((equipo) => {
       equipo.addEventListener("click", () => {
-        manejarSeleccionOctavos(partido.id, equipo.dataset.codigo, card);
+        manejarSeleccionCuartos(partido.id, equipo.dataset.codigo, card);
       });
     });
 
-    containerOctavos.appendChild(card);
+    containerCuartos.appendChild(card);
   });
 }
 
-function manejarSeleccionOctavos(partidoId, codigo, card) {
-  resultadosOctavos[partidoId] = codigo;
+function manejarSeleccionCuartos(partidoId, codigo, card) {
+  resultadosCuartos[partidoId] = codigo;
 
-  actualizarPartidoOctavos(partidoId, card);
-  actualizarBotonOctavos();
+  actualizarPartidoCuartos(partidoId, card);
+  actualizarBotonCuartos();
 }
 
-function actualizarPartidoOctavos(partidoId, card) {
-  const seleccionado = resultadosOctavos[partidoId];
+function actualizarPartidoCuartos(partidoId, card) {
+  const seleccionado = resultadosCuartos[partidoId];
 
   card.querySelectorAll(".bracket-team").forEach((equipo) => {
     if (equipo.dataset.codigo === seleccionado) {
@@ -329,8 +324,8 @@ function actualizarPartidoOctavos(partidoId, card) {
   });
 }
 
-function actualizarBotonOctavos() {
-  const completos = Object.values(resultadosOctavos).filter(
+function actualizarBotonCuartos() {
+  const completos = Object.values(resultadosCuartos).filter(
     (ganador) => ganador !== "",
   ).length;
 
@@ -339,11 +334,11 @@ function actualizarBotonOctavos() {
   if (completos > 0) {
     boton.disabled = false;
     boton.classList.add("enabled");
-    boton.innerText = `Guardar ${completos} resultado(s) de 8vos`;
+    boton.innerText = `Guardar ${completos} resultado(s) de Cuartos`;
   } else {
     boton.disabled = true;
     boton.classList.remove("enabled");
-    boton.innerText = "Selecciona al menos un resultado de 8vos";
+    boton.innerText = "Selecciona al menos un resultado de Cuartos";
   }
 }
 
@@ -353,18 +348,18 @@ document
     try {
       const resultadosParaGuardar = {};
 
-      for (let partidoId in resultadosOctavos) {
-        if (resultadosOctavos[partidoId] !== "") {
-          resultadosParaGuardar[`resultados/octavos/${partidoId}`] =
-            resultadosOctavos[partidoId];
+      for (let partidoId in resultadosCuartos) {
+        if (resultadosCuartos[partidoId] !== "") {
+          resultadosParaGuardar[`resultados/cuartos/${partidoId}`] =
+            resultadosCuartos[partidoId];
         }
       }
 
       await update(ref(db), resultadosParaGuardar);
 
-      alert("Resultados de 8vos actualizados correctamente");
+      alert("Resultados de Cuartos actualizados correctamente");
     } catch (error) {
-      console.error("Error al guardar resultados de 8vos:", error);
-      alert("Error al guardar resultados de 8vos");
+      console.error("Error al guardar resultados de Cuartos:", error);
+      alert("Error al guardar resultados de Cuartos");
     }
   });

@@ -10,7 +10,7 @@ import {
 const usuario = localStorage.getItem("nombreUsuario");
 
 const fechaCierre = new Date("2026-06-11T13:00:00-06:00");
-const fechaCierre16avos = new Date("2026-07-04T12:28:59-06:00");
+const fechaCierreCuartos = new Date("2026-07-09T14:10:00-06:00"); // 2:10 pm CR
 
 if (usuario === null) {
   window.location.href = "index.html";
@@ -20,8 +20,8 @@ function prediccionesCerradas() {
   return new Date() >= fechaCierre;
 }
 
-function predicciones16avosCerradas() {
-  return new Date() >= fechaCierre16avos;
+function prediccionesCuartosCerradas() {
+  return new Date() >= fechaCierreCuartos;
 }
 
 const grupos = {
@@ -99,61 +99,46 @@ const grupos = {
   ],
 };
 
-const partidos16avos = [
-  { id: "M74", equipos: ["de", "py"], detalle: "Alemania vs Paraguay" },
-  { id: "M77", equipos: ["fr", "se"], detalle: "Francia vs Suecia" },
-  { id: "M73", equipos: ["za", "ca"], detalle: "Sudáfrica vs Canadá" },
-  { id: "M75", equipos: ["nl", "ma"], detalle: "Países Bajos vs Marruecos" },
-
-  { id: "M83", equipos: ["pt", "hr"], detalle: "Portugal vs Croacia" },
-  { id: "M84", equipos: ["es", "at"], detalle: "España vs Austria" },
-  { id: "M81", equipos: ["us", "ba"], detalle: "Estados Unidos vs Bosnia" },
-  { id: "M82", equipos: ["be", "sn"], detalle: "Bélgica vs Senegal" },
-
-  { id: "M76", equipos: ["br", "jp"], detalle: "Brasil vs Japón" },
-  { id: "M78", equipos: ["ci", "no"], detalle: "Costa de Marfil vs Noruega" },
-  { id: "M79", equipos: ["mx", "ec"], detalle: "México vs Ecuador" },
-  { id: "M80", equipos: ["eng", "cd"], detalle: "Inglaterra vs RD Congo" },
-
-  { id: "M86", equipos: ["ar", "cv"], detalle: "Argentina vs Cabo Verde" },
-  { id: "M88", equipos: ["au", "eg"], detalle: "Australia vs Egipto" },
-  { id: "M85", equipos: ["ch", "dz"], detalle: "Suiza vs Argelia" },
-  { id: "M87", equipos: ["co", "gh"], detalle: "Colombia vs Ghana" },
-];
+// Se deja tal cual para no perder referencias históricas (ya cerrado)
 const partidosOctavos = [
   { id: "M89", equipos: ["ca", "ma"], detalle: "Canadá vs Marruecos" },
   { id: "M90", equipos: ["py", "fr"], detalle: "Paraguay vs Francia" },
-
   { id: "M91", equipos: ["br", "no"], detalle: "Brasil vs Noruega" },
   { id: "M92", equipos: ["mx", "eng"], detalle: "México vs Inglaterra" },
-
   { id: "M93", equipos: ["pt", "es"], detalle: "Portugal vs España" },
   { id: "M94", equipos: ["us", "be"], detalle: "Estados Unidos vs Bélgica" },
-
   { id: "M95", equipos: ["ar", "eg"], detalle: "Argentina vs Egipto" },
   { id: "M96", equipos: ["ch", "co"], detalle: "Suiza vs Colombia" },
 ];
 
+// TODO: reemplaza estos 4 partidos por los cruces reales de cuartos de final
+const partidosCuartos = [
+  { id: "M97", equipos: ["ma", "fr"], detalle: "Ganador M89 vs Ganador M90" },
+  { id: "M98", equipos: ["no", "eng"], detalle: "Ganador M91 vs Ganador M92" },
+  { id: "M99", equipos: ["es", "be"], detalle: "Ganador M93 vs Ganador M94" },
+  { id: "M100", equipos: ["ar", "ch"], detalle: "Ganador M95 vs Ganador M96" },
+];
+
 const predicciones = {};
-const predicciones16avos = {};
+const prediccionesCuartos = {};
 
 let tienePrediccionGuardada = false;
-let tienePrediccion16avosGuardada = false;
+let tienePrediccionCuartosGuardada = false;
 
 const container = document.getElementById("groupsContainer");
 const totalGrupos = Object.keys(grupos).length;
 
 crearGrupos();
-crearPartidosOctavos();
+crearPartidosCuartos();
 actualizarBarra();
-actualizarBoton16avos();
+actualizarBotonCuartos();
 cargarPrediccionUsuario();
 actualizarContador();
-actualizarContador16avos();
+actualizarContadorCuartos();
 cargarRanking();
 
 setInterval(actualizarContador, 1000);
-setInterval(actualizarContador16avos, 1000);
+setInterval(actualizarContadorCuartos, 1000);
 
 function obtenerEquipoPorCodigo(codigo) {
   if (codigo === "eng") {
@@ -307,22 +292,22 @@ async function cargarPrediccionUsuario() {
       }
     }
 
-    if (datos.octavos) {
-      tienePrediccion16avosGuardada = true;
+    if (datos.cuartos) {
+      tienePrediccionCuartosGuardada = true;
 
-      for (let partidoId in datos.octavos) {
-        predicciones16avos[partidoId] = datos.octavos[partidoId];
+      for (let partidoId in datos.cuartos) {
+        prediccionesCuartos[partidoId] = datos.cuartos[partidoId];
 
         const card = document.querySelector(
           `.partido-16-card[data-partido="${partidoId}"]`,
         );
 
-        if (card) actualizarPartido16avos(partidoId, card);
+        if (card) actualizarPartidoCuartos(partidoId, card);
       }
     }
 
     actualizarBarra();
-    actualizarBoton16avos();
+    actualizarBotonCuartos();
   }
 
   if (prediccionesCerradas()) {
@@ -336,7 +321,7 @@ async function cargarPrediccionUsuario() {
     boton.innerText = "Predicciones cerradas";
   }
 
-  if (predicciones16avosCerradas()) {
+  if (prediccionesCuartosCerradas()) {
     document.querySelectorAll(".bracket-team").forEach((equipo) => {
       equipo.style.pointerEvents = "none";
     });
@@ -344,7 +329,7 @@ async function cargarPrediccionUsuario() {
     const boton = document.getElementById("btnEnviar16avos");
     boton.disabled = true;
     boton.classList.remove("enabled");
-    boton.innerText = "Predicciones de 8avos cerradas";
+    boton.innerText = "Predicciones de Cuartos cerradas";
   }
 }
 
@@ -378,12 +363,12 @@ document.getElementById("btnEnviar").addEventListener("click", async () => {
   }
 });
 
-function crearPartidosOctavos() {
+function crearPartidosCuartos() {
   const container16 = document.getElementById("partidos16Container");
   container16.innerHTML = "";
 
-  partidosOctavos.forEach((partido) => {
-    predicciones16avos[partido.id] = "";
+  partidosCuartos.forEach((partido) => {
+    prediccionesCuartos[partido.id] = "";
 
     const equipo1 = obtenerEquipoPorCodigo(partido.equipos[0]);
     const equipo2 = obtenerEquipoPorCodigo(partido.equipos[1]);
@@ -413,7 +398,7 @@ function crearPartidosOctavos() {
 
     card.querySelectorAll(".bracket-team").forEach((equipo) => {
       equipo.addEventListener("click", () => {
-        manejarSeleccion16avos(partido.id, equipo.dataset.codigo, card);
+        manejarSeleccionCuartos(partido.id, equipo.dataset.codigo, card);
       });
     });
 
@@ -421,17 +406,17 @@ function crearPartidosOctavos() {
   });
 }
 
-function manejarSeleccion16avos(partidoId, codigo, card) {
-  if (predicciones16avosCerradas()) return;
+function manejarSeleccionCuartos(partidoId, codigo, card) {
+  if (prediccionesCuartosCerradas()) return;
 
-  predicciones16avos[partidoId] = codigo;
+  prediccionesCuartos[partidoId] = codigo;
 
-  actualizarPartido16avos(partidoId, card);
-  actualizarBoton16avos();
+  actualizarPartidoCuartos(partidoId, card);
+  actualizarBotonCuartos();
 }
 
-function actualizarPartido16avos(partidoId, card) {
-  const seleccionado = predicciones16avos[partidoId];
+function actualizarPartidoCuartos(partidoId, card) {
+  const seleccionado = prediccionesCuartos[partidoId];
 
   card.querySelectorAll(".bracket-team").forEach((equipo) => {
     if (equipo.dataset.codigo === seleccionado) {
@@ -442,10 +427,10 @@ function actualizarPartido16avos(partidoId, card) {
   });
 }
 
-function actualizarBoton16avos() {
-  const totalPartidos = partidosOctavos.length;
+function actualizarBotonCuartos() {
+  const totalPartidos = partidosCuartos.length;
 
-  const completos = Object.values(predicciones16avos).filter(
+  const completos = Object.values(prediccionesCuartos).filter(
     (ganador) => ganador !== "",
   ).length;
 
@@ -454,9 +439,9 @@ function actualizarBoton16avos() {
   if (completos === totalPartidos) {
     boton.disabled = false;
     boton.classList.add("enabled");
-    boton.innerText = tienePrediccion16avosGuardada
-      ? "Actualizar predicción de 8avos"
-      : "Enviar predicción de 8avos";
+    boton.innerText = tienePrediccionCuartosGuardada
+      ? "Actualizar predicción de Cuartos"
+      : "Enviar predicción de Cuartos";
   } else {
     boton.disabled = true;
     boton.classList.remove("enabled");
@@ -468,18 +453,18 @@ document
   .getElementById("btnEnviar16avos")
   .addEventListener("click", async () => {
     try {
-      if (predicciones16avosCerradas()) {
-        alert("Las predicciones de 8avos ya están cerradas.");
+      if (prediccionesCuartosCerradas()) {
+        alert("Las predicciones de Cuartos ya están cerradas.");
         return;
       }
 
-      const totalPartidos = partidosOctavos.length;
-      const completos = Object.values(predicciones16avos).filter(
+      const totalPartidos = partidosCuartos.length;
+      const completos = Object.values(prediccionesCuartos).filter(
         (ganador) => ganador !== "",
       ).length;
 
       if (completos !== totalPartidos) {
-        alert("Debes completar todos los partidos de 8avos.");
+        alert("Debes completar todos los partidos de Cuartos.");
         return;
       }
 
@@ -493,11 +478,11 @@ document
         ...datosActuales,
         nombre: usuario,
         fecha: new Date().toISOString(),
-        octavos: predicciones16avos,
+        cuartos: prediccionesCuartos,
       });
 
-      tienePrediccion16avosGuardada = true;
-      actualizarBoton16avos();
+      tienePrediccionCuartosGuardada = true;
+      actualizarBotonCuartos();
 
       const mensaje = document.getElementById("mensajeExito16avos");
       mensaje.classList.add("show");
@@ -506,8 +491,8 @@ document
         mensaje.classList.remove("show");
       }, 3000);
     } catch (error) {
-      console.error("Error al guardar predicción de 8avos:", error);
-      alert("Error al guardar la predicción de 8avos. Revisa la consola.");
+      console.error("Error al guardar predicción de Cuartos:", error);
+      alert("Error al guardar la predicción de Cuartos. Revisa la consola.");
     }
   });
 
@@ -537,9 +522,9 @@ function actualizarContador() {
     .padStart(2, "0");
 }
 
-function actualizarContador16avos() {
+function actualizarContadorCuartos() {
   const ahora = new Date();
-  const diferencia = fechaCierre16avos - ahora;
+  const diferencia = fechaCierreCuartos - ahora;
 
   if (diferencia <= 0) {
     document.getElementById("dias16").innerText = "00";
@@ -612,6 +597,14 @@ async function cargarRanking() {
         resultados.octavos,
       );
     }
+
+    if (resultados.cuartos && prediccionUsuario.cuartos) {
+      puntosTotales += calcularPuntos16avos(
+        prediccionUsuario.cuartos,
+        resultados.cuartos,
+      );
+    }
+
     ranking.push({
       nombre: prediccionUsuario.nombre,
       puntos: puntosTotales,

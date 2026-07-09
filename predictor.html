@@ -1,162 +1,158 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>World Predictor 2026</title>
-    <link rel="stylesheet" href="css.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-
-  <body>
-    <div class="overlay">
-      <nav>
-        <div class="logo">
-          <img src="img/mundial-logo.png" />
-          <div>
-            <h1>Predicción Mundial</h1>
-            <span>el que gana, ghana</span>
-          </div>
-        </div>
-
-        <div class="toggle">
-          <button id="btnGrupos" class="active">Grupos</button>
-          <button id="btn16vos">8vos</button>
-          <button id="btnRanking">Ranking</button>
-        </div>
-      </nav>
-
-      <audio id="musicaFondo" loop>
-        <source src="audio/musica.mp3" type="audio/mpeg" />
-      </audio>
-
-      <div class="music-container">
-        <button id="btnMusica">🎵 Música</button>
-        <span id="nombreCancion">Sin reproducir</span>
-      </div>
-
-      <div id="mensajeExito" class="mensaje">
-        ✅ Predicción enviada correctamente.
-      </div>
-
-      <div id="mensajeExito16avos" class="mensaje">
-        ✅ Predicción de 8avos enviada correctamente.
-      </div>
-
-      <!-- VISTA GRUPOS -->
-      <div id="groupsView">
-        <section class="top-info">
-          <div class="card info">
-            <h3>Tu progreso</h3>
-            <div class="progress">
-              <div id="progressBar"></div>
-            </div>
-            <p id="progressText">0 / 12 grupos completos</p>
-          </div>
-
-          <div class="card countdown-card">
-            <div class="count-title">Cierre de predicciones</div>
-            <div class="count-grid">
-              <div>
-                <span id="dias">00</span>
-                <small>DÍAS</small>
-              </div>
-              <div>
-                <span id="horas">00</span>
-                <small>HORAS</small>
-              </div>
-              <div>
-                <span id="minutos">00</span>
-                <small>MINUTOS</small>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="groupsContainer"></section>
-
-        <div class="submit-container">
-          <button id="btnEnviar" disabled>Completa todos los grupos</button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Predictor 2026</title>
+  <link rel="stylesheet" href="css.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="overlay">
+    <nav>
+      <div class="logo">
+        <img src="img/mundial-logo.png" />
+        <div>
+          <h1>Predicción Mundial</h1>
+          <span>el que gana, ghana</span>
         </div>
       </div>
 
-      <!-- VISTA 16VOS -->
-      <section id="dieciseisavosView" style="display: none">
-        <section class="top-info">
-          <div class="card info">
-            <h3>Predicción de Octavos</h3>
-            <p>Selecciona el ganador de cada partido. Cada acierto vale 3 puntos.</p>
-          </div>
+      <div class="toggle">
+        <button id="btnGrupos" class="active">Grupos</button>
+        <button id="btn16vos">Cuartos</button>
+        <button id="btnRanking">Ranking</button>
+      </div>
+    </nav>
 
-          <div class="card countdown-card">
-            <div class="count-title">Cierre de octavos</div>
-            <div class="count-grid">
-              <div>
-                <span id="dias16">00</span>
-                <small>DÍAS</small>
-              </div>
-              <div>
-                <span id="horas16">00</span>
-                <small>HORAS</small>
-              </div>
-              <div>
-                <span id="minutos16">00</span>
-                <small>MINUTOS</small>
-              </div>
-            </div>
-          </div>
-        </section>
+    <audio id="musicaFondo" loop>
+      <source src="audio/musica.mp3" type="audio/mpeg" />
+    </audio>
 
-        <section class="dieciseisavos-section">
-          <h2 class="fase-title">Octavos de final</h2>
-          <div id="partidos16Container" class="partidos-16-container"></div>
-        </section>
-
-        <div class="submit-container">
-          <button id="btnEnviar16avos" disabled>
-            Completa todos los partidos
-          </button>
-        </div>
-      </section>
-
-      <!-- VISTA RANKING -->
-      <section id="rankingView" style="display: none">
-        <div class="ranking-top">
-          <div class="card">
-            <h2>📜 Reglas</h2>
-            <ul>
-              <li>2000₡ para participar</li>
-              <li>el que gana se lleva todo</li>
-              <li>Primero se predice toda la <b>fase de grupos</b>.</li>
-              <li>Posición exacta: <b>3 pts</b></li>
-              <li>Clasificado correcto: <b>1 pt</b></li>
-              <li>Máximo por grupo: <b>12 pts</b></li>
-              <li>Cada acierto en fase eliminatoria vale <b>3 puntos</b>.</li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h2>💰 Plata acumulada</h2>
-            <div class="money">₡0</div>
-            <small>Sin participantes</small>
-          </div>
-        </div>
-
-        <div class="card ranking-card">
-          <h2>🏆 Ranking</h2>
-          <div class="ranking-header">
-            <span>POS</span>
-            <span>JUGADOR</span>
-            <span>PTS</span>
-          </div>
-          <div id="rankingContainer"></div>
-        </div>
-      </section>
+    <div class="music-container">
+      <button id="btnMusica">🎵 Música</button>
+      <span id="nombreCancion">Sin reproducir</span>
     </div>
 
-    <script type="module" src="predictor.js"></script>
-  </body>
+    <div id="mensajeExito" class="mensaje">
+      ✅ Predicción enviada correctamente.
+    </div>
+
+    <div id="mensajeExito16avos" class="mensaje">
+      ✅ Predicción de cuartos enviada correctamente.
+    </div>
+
+    <!-- VISTA GRUPOS -->
+    <div id="groupsView">
+      <section class="top-info">
+        <div class="card info">
+          <h3>Tu progreso</h3>
+          <div class="progress">
+            <div id="progressBar"></div>
+          </div>
+          <p id="progressText">0 / 12 grupos completos</p>
+        </div>
+
+        <div class="card countdown-card">
+          <div class="count-title">Cierre de predicciones</div>
+          <div class="count-grid">
+            <div>
+              <span id="dias">00</span>
+              <small>DÍAS</small>
+            </div>
+            <div>
+              <span id="horas">00</span>
+              <small>HORAS</small>
+            </div>
+            <div>
+              <span id="minutos">00</span>
+              <small>MINUTOS</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="groupsContainer"></section>
+
+      <div class="submit-container">
+        <button id="btnEnviar" disabled>Completa todos los grupos</button>
+      </div>
+    </div>
+
+    <!-- VISTA CUARTOS (reutiliza la sección que antes era de 8vos) -->
+    <section id="dieciseisavosView" style="display: none">
+      <section class="top-info">
+        <div class="card info">
+          <h3>Predicción de Cuartos</h3>
+          <p>Selecciona el ganador de cada partido. Cada acierto vale 3 puntos.</p>
+        </div>
+
+        <div class="card countdown-card">
+          <div class="count-title">Cierre de cuartos</div>
+          <div class="count-grid">
+            <div>
+              <span id="dias16">00</span>
+              <small>DÍAS</small>
+            </div>
+            <div>
+              <span id="horas16">00</span>
+              <small>HORAS</small>
+            </div>
+            <div>
+              <span id="minutos16">00</span>
+              <small>MINUTOS</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dieciseisavos-section">
+        <h2 class="fase-title">Cuartos de final</h2>
+        <div id="partidos16Container" class="partidos-16-container"></div>
+      </section>
+
+      <div class="submit-container">
+        <button id="btnEnviar16avos" disabled>
+          Completa todos los partidos
+        </button>
+      </div>
+    </section>
+
+    <!-- VISTA RANKING -->
+    <section id="rankingView" style="display: none">
+      <div class="ranking-top">
+        <div class="card">
+          <h2>📜 Reglas</h2>
+          <ul>
+            <li>2000₡ para participar</li>
+            <li>el que gana se lleva todo</li>
+            <li>Primero se predice toda la <b>fase de grupos</b>.</li>
+            <li>Posición exacta: <b>3 pts</b></li>
+            <li>Clasificado correcto: <b>1 pt</b></li>
+            <li>Máximo por grupo: <b>12 pts</b></li>
+            <li>Cada acierto en fase eliminatoria vale <b>3 puntos</b>.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>💰 Plata acumulada</h2>
+          <div class="money">₡0</div>
+          <small>Sin participantes</small>
+        </div>
+      </div>
+
+      <div class="card ranking-card">
+        <h2>🏆 Ranking</h2>
+        <div class="ranking-header">
+          <span>POS</span>
+          <span>JUGADOR</span>
+          <span>PTS</span>
+        </div>
+        <div id="rankingContainer"></div>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="predictor.js"></script>
+</body>
 </html>
