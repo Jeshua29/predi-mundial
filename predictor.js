@@ -1,4 +1,5 @@
 import { db } from "./firebase.js";
+import { dieciseisavos, octavos, cuartos, semis } from "./bracket-data.js";
 
 import {
   ref,
@@ -10,7 +11,7 @@ import {
 const usuario = localStorage.getItem("nombreUsuario");
 
 const fechaCierre = new Date("2026-06-11T13:00:00-06:00");
-const fechaCierreCuartos = new Date("2026-07-09T14:10:00-06:00"); // 2:10 pm CR
+const fechaCierreCuartos = new Date("2026-07-09T14:10:00-06:00");
 
 if (usuario === null) {
   window.location.href = "index.html";
@@ -22,6 +23,11 @@ function prediccionesCerradas() {
 
 function prediccionesCuartosCerradas() {
   return new Date() >= fechaCierreCuartos;
+}
+
+function estaSemiCerrada(matchId) {
+  const partido = semis.find((s) => s.id === matchId);
+  return new Date() >= new Date(partido.cierre);
 }
 
 const grupos = {
@@ -99,31 +105,23 @@ const grupos = {
   ],
 };
 
-// Se deja tal cual para no perder referencias históricas (ya cerrado)
-const partidosOctavos = [
-  { id: "M89", equipos: ["ca", "ma"], detalle: "Canadá vs Marruecos" },
-  { id: "M90", equipos: ["py", "fr"], detalle: "Paraguay vs Francia" },
-  { id: "M91", equipos: ["br", "no"], detalle: "Brasil vs Noruega" },
-  { id: "M92", equipos: ["mx", "eng"], detalle: "México vs Inglaterra" },
-  { id: "M93", equipos: ["pt", "es"], detalle: "Portugal vs España" },
-  { id: "M94", equipos: ["us", "be"], detalle: "Estados Unidos vs Bélgica" },
-  { id: "M95", equipos: ["ar", "eg"], detalle: "Argentina vs Egipto" },
-  { id: "M96", equipos: ["ch", "co"], detalle: "Suiza vs Colombia" },
-];
-
-// TODO: reemplaza estos 4 partidos por los cruces reales de cuartos de final
-const partidosCuartos = [
-  { id: "M97", equipos: ["ma", "fr"], detalle: "Ganador M89 vs Ganador M90" },
-  { id: "M98", equipos: ["no", "eng"], detalle: "Ganador M91 vs Ganador M92" },
-  { id: "M99", equipos: ["es", "be"], detalle: "Ganador M93 vs Ganador M94" },
-  { id: "M100", equipos: ["ar", "ch"], detalle: "Ganador M95 vs Ganador M96" },
-];
+const partidosCuartos = cuartos.map((c) => ({
+  id: c.id,
+  equipos: c.equipos,
+  detalle: "",
+}));
 
 const predicciones = {};
 const prediccionesCuartos = {};
+const prediccionesSemis = {};
 
 let tienePrediccionGuardada = false;
 let tienePrediccionCuartosGuardada = false;
+
+let matchIdActivo = null;
+let vaTiempoExtraSeleccionado = null;
+let ganadorEtSeleccionado = null;
+let ganadorPenalesSeleccionado = null;
 
 const container = document.getElementById("groupsContainer");
 const totalGrupos = Object.keys(grupos).length;
@@ -306,6 +304,10 @@ async function cargarPrediccionUsuario() {
       }
     }
 
+    if (datos.semis) {
+      Object.assign(prediccionesSemis, datos.semis);
+    }
+
     actualizarBarra();
     actualizarBotonCuartos();
   }
@@ -331,6 +333,8 @@ async function cargarPrediccionUsuario() {
     boton.classList.remove("enabled");
     boton.innerText = "Predicciones de Cuartos cerradas";
   }
+
+  renderBracket();
 }
 
 document.getElementById("btnEnviar").addEventListener("click", async () => {
@@ -380,17 +384,17 @@ function crearPartidosCuartos() {
     card.innerHTML = `
       <div class="match-header">
         <span>${partido.id}</span>
-        <small>${partido.detalle}</small>
+        <small>${equipo1.nombre} vs ${equipo2.nombre}</small>
       </div>
 
-      <div class="bracket-team" data-codigo="${equipo1.codigo}">
+      <div class="bracket-team" data-codigo="${partido.equipos[0]}">
         <img src="https://flagcdn.com/w40/${equipo1.codigo}.png">
         <span>${equipo1.nombre}</span>
       </div>
 
       <div class="versus">VS</div>
 
-      <div class="bracket-team" data-codigo="${equipo2.codigo}">
+      <div class="bracket-team" data-codigo="${partido.equipos[1]}">
         <img src="https://flagcdn.com/w40/${equipo2.codigo}.png">
         <span>${equipo2.nombre}</span>
       </div>
@@ -496,6 +500,294 @@ document
     }
   });
 
+/* ===================== */
+/* BRACKET COMPLETO       */
+/* ===================== */
+
+function renderMiniMarcador(partido) {
+  const [a, b] = partido.equipos;
+  const eqA = obtenerEquipoPorCodigo(a);
+  const eqB = obtenerEquipoPorCodigo(b);
+  const marcadorTxt = partido.marcador
+    ? `${partido.marcador[0]} - ${partido.marcador[1]}`
+    : "definido";
+  const penalesTxt = partido.penales
+    ? ` (${partido.penales[0]}-${partido.penales[1]} pen)`
+    : "";
+
+  return `
+    <div class="bracket-mini-card">
+      <div class="bracket-mini-team ${partido.ganador === a ? "gano" : ""}">
+        <img src="https://flagcdn.com/w40/${eqA.codigo}.png"><span>${eqA.nombre}</span>
+      </div>
+      <div class="bracket-mini-score">${marcadorTxt}${penalesTxt}</div>
+      <div class="bracket-mini-team ${partido.ganador === b ? "gano" : ""}">
+        <img src="https://flagcdn.com/w40/${eqB.codigo}.png"><span>${eqB.nombre}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderSemiCard(partido) {
+  const [a, b] = partido.equipos;
+  const eqA = obtenerEquipoPorCodigo(a);
+  const eqB = obtenerEquipoPorCodigo(b);
+
+  const card = document.createElement("div");
+  card.className = "bracket-match partido-semi-card";
+  card.dataset.partido = partido.id;
+
+  const yaPredijo = !!prediccionesSemis[partido.id];
+  const cerrado = estaSemiCerrada(partido.id);
+
+  card.innerHTML = `
+    <div class="match-header"><span>${partido.id}</span></div>
+    <div class="bracket-team"><img src="https://flagcdn.com/w40/${eqA.codigo}.png"><span>${eqA.nombre}</span></div>
+    <div class="versus">VS</div>
+    <div class="bracket-team"><img src="https://flagcdn.com/w40/${eqB.codigo}.png"><span>${eqB.nombre}</span></div>
+    <button class="btn-predecir-semi" ${cerrado ? "disabled" : ""}>
+      ${cerrado ? "Predicciones cerradas" : yaPredijo ? "Editar predicción" : "Predecir"}
+    </button>
+  `;
+
+  card.querySelector(".btn-predecir-semi").addEventListener("click", () => {
+    if (!cerrado) abrirModalSemis(partido.id);
+  });
+
+  return card;
+}
+
+function renderBracket() {
+  const wrapper = document.getElementById("bracketWrapper");
+  wrapper.innerHTML = "";
+
+  const columnas = [
+    { titulo: "Dieciseisavos", partidos: dieciseisavos, tipo: "locked" },
+    { titulo: "Octavos", partidos: octavos, tipo: "locked" },
+    { titulo: "Cuartos", partidos: cuartos, tipo: "locked" },
+    { titulo: "Semifinales", partidos: semis, tipo: "semis" },
+    { titulo: "Final", partidos: [], tipo: "final" },
+  ];
+
+  columnas.forEach((col) => {
+    const colEl = document.createElement("div");
+    colEl.className = "bracket-col";
+
+    const tituloEl = document.createElement("div");
+    tituloEl.className = "bracket-col-title";
+    tituloEl.innerText = col.titulo;
+    colEl.appendChild(tituloEl);
+
+    if (col.tipo === "locked") {
+      col.partidos.forEach((p) => {
+        colEl.insertAdjacentHTML("beforeend", renderMiniMarcador(p));
+      });
+    }
+
+    if (col.tipo === "semis") {
+      col.partidos.forEach((p) => {
+        colEl.appendChild(renderSemiCard(p));
+      });
+    }
+
+    if (col.tipo === "final") {
+      const lockCard = document.createElement("div");
+      lockCard.className = "bracket-final-lock";
+      lockCard.innerHTML = `<span>🔒</span><small>Se habilita al definir semifinales</small>`;
+      colEl.appendChild(lockCard);
+    }
+
+    wrapper.appendChild(colEl);
+  });
+
+  wrapper.scrollLeft = wrapper.scrollWidth;
+}
+
+/* ===================== */
+/* MODAL SEMIS            */
+/* ===================== */
+
+function abrirModalSemis(matchId) {
+  matchIdActivo = matchId;
+  const partido = semis.find((s) => s.id === matchId);
+  const [codigoLocal, codigoVisitante] = partido.equipos;
+  const eqLocal = obtenerEquipoPorCodigo(codigoLocal);
+  const eqVisitante = obtenerEquipoPorCodigo(codigoVisitante);
+
+  document.getElementById("modalTitulo").innerText = `${eqLocal.nombre} vs ${eqVisitante.nombre}`;
+  document.getElementById("modalFlagLocal").src = `https://flagcdn.com/w40/${eqLocal.codigo}.png`;
+  document.getElementById("modalFlagVisitante").src = `https://flagcdn.com/w40/${eqVisitante.codigo}.png`;
+  document.getElementById("modalNombreLocal").innerText = eqLocal.nombre;
+  document.getElementById("modalNombreVisitante").innerText = eqVisitante.nombre;
+  document.getElementById("labelGoleadoresLocal").innerText = `Goleadores ${eqLocal.nombre}`;
+  document.getElementById("labelGoleadoresVisitante").innerText = `Goleadores ${eqVisitante.nombre}`;
+  document.getElementById("btnGanadorEtLocal").innerText = eqLocal.nombre;
+  document.getElementById("btnGanadorEtVisitante").innerText = eqVisitante.nombre;
+  document.getElementById("btnPenalesLocal").innerText = eqLocal.nombre;
+  document.getElementById("btnPenalesVisitante").innerText = eqVisitante.nombre;
+
+  const existente = prediccionesSemis[matchId] || {};
+  const local = existente.marcador?.local ?? 0;
+  const visitante = existente.marcador?.visitante ?? 0;
+
+  document.getElementById("inputMarcadorLocal").value = local;
+  document.getElementById("inputMarcadorVisitante").value = visitante;
+
+  regenerarCamposGoleadores("camposGoleadoresLocal", local, existente.goleadoresLocal || []);
+  regenerarCamposGoleadores("camposGoleadoresVisitante", visitante, existente.goleadoresVisitante || []);
+
+  vaTiempoExtraSeleccionado = existente.vaTiempoExtra ?? null;
+  ganadorEtSeleccionado = existente.ganadorTiempoExtra ?? null;
+  ganadorPenalesSeleccionado = existente.ganadorPenales ?? null;
+
+  actualizarBloqueEmpate();
+  document.getElementById("modalSemis").style.display = "flex";
+}
+function regenerarCamposGoleadores(contenedorId, cantidad, valoresPrevios) {
+  const cont = document.getElementById(contenedorId);
+  cont.innerHTML = "";
+  for (let i = 0; i < cantidad; i++) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = `Gol ${i + 1}: nombre del jugador`;
+    input.value = valoresPrevios[i] || "";
+    cont.appendChild(input);
+  }
+}
+
+function leerGoleadores(contenedorId) {
+  return Array.from(document.querySelectorAll(`#${contenedorId} input`))
+    .map((input) => input.value.trim())
+    .filter(Boolean);
+}
+
+function onMarcadorChange() {
+  actualizarBloqueEmpate();
+
+  const local = Number(document.getElementById("inputMarcadorLocal").value) || 0;
+  const visitante = Number(document.getElementById("inputMarcadorVisitante").value) || 0;
+
+  const golesLocalActuales = leerGoleadores("camposGoleadoresLocal");
+  const golesVisitanteActuales = leerGoleadores("camposGoleadoresVisitante");
+
+  regenerarCamposGoleadores("camposGoleadoresLocal", local, golesLocalActuales);
+  regenerarCamposGoleadores("camposGoleadoresVisitante", visitante, golesVisitanteActuales);
+}
+function actualizarBloqueEmpate() {
+  const local = Number(document.getElementById("inputMarcadorLocal").value);
+  const visitante = Number(document.getElementById("inputMarcadorVisitante").value);
+  const empatado = local === visitante;
+
+  document.getElementById("bloqueEmpate").style.display = empatado ? "block" : "none";
+  document.getElementById("bloqueGanadorEt").style.display =
+    empatado && vaTiempoExtraSeleccionado === true ? "block" : "none";
+  document.getElementById("bloqueGanadorPenales").style.display =
+    empatado && vaTiempoExtraSeleccionado === false ? "block" : "none";
+
+  document.getElementById("btnEtSi").classList.toggle("activo", vaTiempoExtraSeleccionado === true);
+  document.getElementById("btnEtNo").classList.toggle("activo", vaTiempoExtraSeleccionado === false);
+  document.getElementById("btnGanadorEtLocal").classList.toggle("activo", ganadorEtSeleccionado === "local");
+  document.getElementById("btnGanadorEtVisitante").classList.toggle("activo", ganadorEtSeleccionado === "visitante");
+  document.getElementById("btnPenalesLocal").classList.toggle("activo", ganadorPenalesSeleccionado === "local");
+  document.getElementById("btnPenalesVisitante").classList.toggle("activo", ganadorPenalesSeleccionado === "visitante");
+}
+
+document.getElementById("inputMarcadorLocal").addEventListener("input", onMarcadorChange);
+document.getElementById("inputMarcadorVisitante").addEventListener("input", onMarcadorChange);
+
+document.getElementById("btnEtSi").addEventListener("click", () => {
+  vaTiempoExtraSeleccionado = true;
+  actualizarBloqueEmpate();
+});
+document.getElementById("btnEtNo").addEventListener("click", () => {
+  vaTiempoExtraSeleccionado = false;
+  actualizarBloqueEmpate();
+});
+document.getElementById("btnGanadorEtLocal").addEventListener("click", () => {
+  ganadorEtSeleccionado = "local";
+  actualizarBloqueEmpate();
+});
+document.getElementById("btnGanadorEtVisitante").addEventListener("click", () => {
+  ganadorEtSeleccionado = "visitante";
+  actualizarBloqueEmpate();
+});
+document.getElementById("btnPenalesLocal").addEventListener("click", () => {
+  ganadorPenalesSeleccionado = "local";
+  actualizarBloqueEmpate();
+});
+document.getElementById("btnPenalesVisitante").addEventListener("click", () => {
+  ganadorPenalesSeleccionado = "visitante";
+  actualizarBloqueEmpate();
+});
+
+document.getElementById("btnCerrarModal").addEventListener("click", () => {
+  document.getElementById("modalSemis").style.display = "none";
+});
+
+document.getElementById("btnGuardarSemis").addEventListener("click", async () => {
+  if (estaSemiCerrada(matchIdActivo)) {
+    alert("Esta predicción ya está cerrada.");
+    document.getElementById("modalSemis").style.display = "none";
+    return;
+  }
+
+  const local = Number(document.getElementById("inputMarcadorLocal").value) || 0;
+  const visitante = Number(document.getElementById("inputMarcadorVisitante").value) || 0;
+  const empatado = local === visitante;
+
+  if (empatado && vaTiempoExtraSeleccionado === null) {
+    alert("Indica si el partido se define en tiempo extra o en penales.");
+    return;
+  }
+  if (empatado && vaTiempoExtraSeleccionado === true && !ganadorEtSeleccionado) {
+    alert("Selecciona quién gana en tiempo extra.");
+    return;
+  }
+  if (empatado && vaTiempoExtraSeleccionado === false && !ganadorPenalesSeleccionado) {
+    alert("Selecciona quién gana en penales.");
+    return;
+  }
+const goleadoresLocal = leerGoleadores("camposGoleadoresLocal");
+  const goleadoresVisitante = leerGoleadores("camposGoleadoresVisitante");
+
+  prediccionesSemis[matchIdActivo] = {
+    marcador: { local, visitante },
+    goleadoresLocal,
+    goleadoresVisitante,
+    vaTiempoExtra: empatado ? vaTiempoExtraSeleccionado : null,
+    ganadorTiempoExtra: empatado && vaTiempoExtraSeleccionado === true ? ganadorEtSeleccionado : null,
+    ganadorPenales: empatado && vaTiempoExtraSeleccionado === false ? ganadorPenalesSeleccionado : null,
+  };
+
+  try {
+    const usuarioKey = usuario.toLowerCase();
+    const usuarioRef = ref(db, "predicciones/" + usuarioKey);
+    const snapshot = await get(usuarioRef);
+    const datosActuales = snapshot.exists() ? snapshot.val() : {};
+
+    await set(usuarioRef, {
+      ...datosActuales,
+      nombre: usuario,
+      fecha: new Date().toISOString(),
+      semis: prediccionesSemis,
+    });
+
+    document.getElementById("modalSemis").style.display = "none";
+    renderBracket();
+
+    const mensaje = document.getElementById("mensajeExitoSemis");
+    mensaje.classList.add("show");
+    setTimeout(() => mensaje.classList.remove("show"), 3000);
+  } catch (error) {
+    console.error("Error al guardar predicción de semis:", error);
+    alert("Error al guardar la predicción. Revisa la consola.");
+  }
+});
+
+/* ===================== */
+/* CONTADORES             */
+/* ===================== */
+
 function actualizarContador() {
   const ahora = new Date();
   const diferencia = fechaCierre - ahora;
@@ -549,6 +841,83 @@ function actualizarContadorCuartos() {
     .toString()
     .padStart(2, "0");
 }
+
+/* ===================== */
+/* PUNTAJE SEMIS           */
+/* ===================== */
+
+function obtenerGanadorRelativo(obj) {
+  if (obj.marcador.local !== obj.marcador.visitante) {
+    return obj.marcador.local > obj.marcador.visitante ? "local" : "visitante";
+  }
+  if (obj.vaTiempoExtra) return obj.ganadorTiempoExtra;
+  return obj.ganadorPenales;
+}
+
+function calcularPuntosPartidoSemi(prediccion, resultado) {
+  let puntos = 0;
+
+  const ganadorPrediccion = obtenerGanadorRelativo(prediccion);
+  const ganadorReal = obtenerGanadorRelativo(resultado);
+  puntos += ganadorPrediccion === ganadorReal ? 3 : -3;
+
+  const marcadorExacto =
+    prediccion.marcador.local === resultado.marcador.local &&
+    prediccion.marcador.visitante === resultado.marcador.visitante;
+  puntos += marcadorExacto ? 5 : -5;
+
+  const golesPredichos = [
+    ...(prediccion.goleadoresLocal || []),
+    ...(prediccion.goleadoresVisitante || []),
+  ];
+  const golesReales = [
+    ...(resultado.goleadoresLocal || []),
+    ...(resultado.goleadoresVisitante || []),
+  ].map((n) => n.trim().toLowerCase());
+
+  golesPredichos.forEach((jugador) => {
+    const acerto = golesReales.includes(jugador.trim().toLowerCase());
+    puntos += acerto ? 2 : -2;
+  });
+
+  const empatoPrediccion = prediccion.marcador.local === prediccion.marcador.visitante;
+
+  if (empatoPrediccion) {
+    const empatoReal = resultado.marcador.local === resultado.marcador.visitante;
+    const etDecisivoReal = empatoReal ? !!resultado.vaTiempoExtra : false;
+
+    puntos += prediccion.vaTiempoExtra === etDecisivoReal ? 2 : -2;
+
+    if (prediccion.vaTiempoExtra === true && etDecisivoReal) {
+      puntos += prediccion.ganadorTiempoExtra === resultado.ganadorTiempoExtra ? 3 : -3;
+    }
+
+    if (prediccion.vaTiempoExtra === false && empatoReal && !etDecisivoReal) {
+      puntos += prediccion.ganadorPenales === resultado.ganadorPenales ? 3 : -3;
+    }
+  }
+
+  return puntos;
+}
+
+function calcularPuntosSemis(prediccionSemis, resultadosSemis) {
+  let total = 0;
+  if (!prediccionSemis) return 0;
+
+  for (const matchId in resultadosSemis) {
+    const resultado = resultadosSemis[matchId];
+    const prediccion = prediccionSemis[matchId];
+    if (!prediccion) continue;
+
+    total += calcularPuntosPartidoSemi(prediccion, resultado);
+  }
+
+  return total;
+}
+
+/* ===================== */
+/* RANKING                */
+/* ===================== */
 
 async function cargarRanking() {
   const contenedor = document.getElementById("rankingContainer");
@@ -605,9 +974,16 @@ async function cargarRanking() {
       );
     }
 
+    if (resultados.semis && prediccionUsuario.semis) {
+      puntosTotales += calcularPuntosSemis(
+        prediccionUsuario.semis,
+        resultados.semis,
+      );
+    }
+
     ranking.push({
       nombre: prediccionUsuario.nombre,
-      puntos: puntosTotales,
+      puntos: Math.max(0, puntosTotales),
     });
   }
 
@@ -657,10 +1033,12 @@ function calcularPuntosGrupo(prediccion, resultado) {
 
   return puntos;
 }
+
 function normalizarCodigo(codigo) {
   if (codigo === "eng") return "gb";
   return codigo;
 }
+
 function calcularPuntos16avos(prediccion16, resultados16) {
   let puntos = 0;
 
@@ -680,41 +1058,55 @@ function calcularPuntos16avos(prediccion16, resultados16) {
   return puntos;
 }
 
+/* ===================== */
+/* NAVEGACIÓN             */
+/* ===================== */
+
 const btnGrupos = document.getElementById("btnGrupos");
 const btn16vos = document.getElementById("btn16vos");
+const btnSemis = document.getElementById("btnSemis");
 const btnRanking = document.getElementById("btnRanking");
 
-btnRanking.addEventListener("click", () => {
+function ocultarTodasLasVistas() {
   document.getElementById("groupsView").style.display = "none";
   document.getElementById("dieciseisavosView").style.display = "none";
+  document.getElementById("semisView").style.display = "none";
+  document.getElementById("rankingView").style.display = "none";
+
+  [btnGrupos, btn16vos, btnSemis, btnRanking].forEach((b) =>
+    b.classList.remove("active"),
+  );
+}
+
+btnRanking.addEventListener("click", () => {
+  ocultarTodasLasVistas();
   document.getElementById("rankingView").style.display = "block";
-
   btnRanking.classList.add("active");
-  btnGrupos.classList.remove("active");
-  btn16vos.classList.remove("active");
-
   cargarRanking();
 });
 
 btn16vos.addEventListener("click", () => {
-  document.getElementById("groupsView").style.display = "none";
-  document.getElementById("rankingView").style.display = "none";
+  ocultarTodasLasVistas();
   document.getElementById("dieciseisavosView").style.display = "block";
-
   btn16vos.classList.add("active");
-  btnGrupos.classList.remove("active");
-  btnRanking.classList.remove("active");
+});
+
+btnSemis.addEventListener("click", () => {
+  ocultarTodasLasVistas();
+  document.getElementById("semisView").style.display = "block";
+  btnSemis.classList.add("active");
+  renderBracket();
 });
 
 btnGrupos.addEventListener("click", () => {
-  document.getElementById("rankingView").style.display = "none";
-  document.getElementById("dieciseisavosView").style.display = "none";
+  ocultarTodasLasVistas();
   document.getElementById("groupsView").style.display = "block";
-
   btnGrupos.classList.add("active");
-  btn16vos.classList.remove("active");
-  btnRanking.classList.remove("active");
 });
+
+/* ===================== */
+/* MÚSICA                 */
+/* ===================== */
 
 const canciones = [
   "audio/waka waka.mp3",

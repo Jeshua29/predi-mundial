@@ -1,51 +1,62 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Resultados</title>
-  <link rel="stylesheet" href="css.css">
-</head>
-<body>
-  <div class="overlay">
-    <nav>
-      <div class="logo">
-        <h1>Admin Resultados</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Resultados</title>
+    <link rel="stylesheet" href="css.css" />
+  </head>
+  <body>
+    <div class="overlay">
+      <nav>
+        <div class="logo">
+          <h1>Admin Resultados</h1>
+        </div>
+      </nav>
+
+      <section class="top-info">
+        <div class="card info">
+          <h3>Resultados de grupos</h3>
+          <p>Ordena las posiciones reales de cada grupo.</p>
+        </div>
+      </section>
+
+      <section id="groupsContainer"></section>
+
+      <div class="submit-container">
+        <button id="btnGuardarResultados" disabled>
+          Selecciona al menos un grupo completo
+        </button>
       </div>
-    </nav>
 
-    <section class="top-info">
-      <div class="card info">
-        <h3>Resultados de grupos</h3>
-        <p>Ordena las posiciones reales de cada grupo.</p>
+      <section class="top-info">
+        <div class="card info">
+          <h3>Resultados de Cuartos</h3>
+          <p>Selecciona el ganador real de cada partido.</p>
+        </div>
+      </section>
+
+      <section class="dieciseisavos-section">
+        <div id="partidos16AdminContainer" class="partidos-16-container"></div>
+      </section>
+
+      <div class="submit-container">
+        <button id="btnGuardar16avos" disabled>
+          Selecciona al menos un resultado de Cuartos
+        </button>
       </div>
-    </section>
 
-    <section id="groupsContainer"></section>
+      <section class="top-info">
+        <div class="card info">
+          <h3>Resultados de Semifinales</h3>
+          <p>Marcador, goleadores, tiempo extra y penales por partido.</p>
+        </div>
+      </section>
 
-    <div class="submit-container">
-      <button id="btnGuardarResultados" disabled>
-        Selecciona al menos un grupo completo
-      </button>
+      <section class="dieciseisavos-section">
+        <div id="semisAdminContainer" class="partidos-16-container"></div>
+      </section>
     </div>
 
-    <section class="top-info">
-      <div class="card info">
-        <h3>Resultados de Cuartos</h3>
-        <p>Selecciona el ganador real de cada partido.</p>
-      </div>
-    </section>
-
-    <section class="dieciseisavos-section">
-      <div id="partidos16AdminContainer" class="partidos-16-container"></div>
-    </section>
-
-    <div class="submit-container">
-      <button id="btnGuardar16avos" disabled>
-        Selecciona al menos un resultado de Cuartos
-      </button>
-    </div>
-  </div>
-
-  <script type="module" src="admin.js"></script>
-</body>
+    <script type="module" src="admin.js"></script>
+  </body>
 </html>

@@ -1,4 +1,5 @@
 import { db } from "./firebase.js";
+import { semis } from "./bracket-data.js";
 
 import {
   ref,
@@ -87,13 +88,11 @@ const grupos = {
   ],
 };
 
-// TODO: reemplaza estos 4 partidos por los cruces reales de cuartos de final
-// (deben coincidir exactamente con los de predictor.js)
 const partidosCuartos = [
-  { id: "M97", equipos: ["ma", "fr"], detalle: "Ganador M89 vs Ganador M90" },
-  { id: "M98", equipos: ["no", "eng"], detalle: "Ganador M91 vs Ganador M92" },
-  { id: "M99", equipos: ["es", "be"], detalle: "Ganador M93 vs Ganador M94" },
-  { id: "M100", equipos: ["ar", "ch"], detalle: "Ganador M95 vs Ganador M96" },
+  { id: "M97", equipos: ["fr", "ma"], detalle: "Francia vs Marruecos" },
+  { id: "M98", equipos: ["es", "be"], detalle: "España vs Bélgica" },
+  { id: "M99", equipos: ["no", "eng"], detalle: "Noruega vs Inglaterra" },
+  { id: "M100", equipos: ["ar", "ch"], detalle: "Argentina vs Suiza" },
 ];
 
 const resultados = {};
@@ -107,13 +106,10 @@ crearPartidosCuartosAdmin();
 actualizarBoton();
 actualizarBotonCuartos();
 
+
 function obtenerEquipoPorCodigo(codigo) {
   if (codigo === "eng") {
-    return {
-      nombre: "Inglaterra",
-      codigo: "gb",
-      codigoInterno: "eng",
-    };
+    return { nombre: "Inglaterra", codigo: "gb", codigoInterno: "eng" };
   }
 
   for (let grupo in grupos) {
@@ -363,3 +359,153 @@ document
       alert("Error al guardar resultados de Cuartos");
     }
   });
+
+/* ===================== */
+/* RESULTADOS DE SEMIS    */
+/* ===================== */
+
+let etAdmin = {};
+let penalesAdmin = {};
+
+function crearAdminSemis() {
+  const cont = document.getElementById("semisAdminContainer");
+  if (!cont) return;
+  cont.innerHTML = "";
+
+  semis.forEach((partido) => {
+    const [codigoLocal, codigoVisitante] = partido.equipos;
+    const eqLocal = obtenerEquipoPorCodigo(codigoLocal);
+    const eqVisitante = obtenerEquipoPorCodigo(codigoVisitante);
+
+    etAdmin[partido.id] = null;
+    penalesAdmin[partido.id] = null;
+
+    const card = document.createElement("div");
+    card.className = "bracket-match partido-semi-admin";
+    card.dataset.partido = partido.id;
+
+    card.innerHTML = `
+      <div class="match-header"><span>${partido.id}</span><small>${eqLocal.nombre} vs ${eqVisitante.nombre}</small></div>
+
+      <div class="modal-marcador-header">
+        <div class="modal-equipo-header">
+          <img src="https://flagcdn.com/w40/${eqLocal.codigo}.png"><span>${eqLocal.nombre}</span>
+        </div>
+        <div class="modal-equipo-header">
+          <span>${eqVisitante.nombre}</span><img src="https://flagcdn.com/w40/${eqVisitante.codigo}.png">
+        </div>
+      </div>
+
+      <div class="modal-marcador-inputs">
+        <input type="number" min="0" value="0" class="input-marcador-local">
+        <span class="modal-vs">-</span>
+        <input type="number" min="0" value="0" class="input-marcador-visitante">
+      </div>
+
+      <div class="bloque-empate-admin" style="display:none;">
+        <p class="modal-pregunta">¿Se definió en tiempo extra?</p>
+        <div class="modal-opciones">
+          <button type="button" class="modal-opcion btn-et-si">Sí</button>
+          <button type="button" class="modal-opcion btn-et-no">No, penales</button>
+        </div>
+        <div class="bloque-ganador-et" style="display:none;">
+          <div class="modal-opciones">
+            <button type="button" class="modal-opcion btn-ganador-et-local">${eqLocal.nombre}</button>
+            <button type="button" class="modal-opcion btn-ganador-et-visitante">${eqVisitante.nombre}</button>
+          </div>
+        </div>
+        <div class="bloque-ganador-penales" style="display:none;">
+          <div class="modal-opciones">
+            <button type="button" class="modal-opcion btn-ganador-pen-local">${eqLocal.nombre}</button>
+            <button type="button" class="modal-opcion btn-ganador-pen-visitante">${eqVisitante.nombre}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-goleadores">
+        <label>Goleadores ${eqLocal.nombre}</label>
+        <input type="text" class="input-goles-local" placeholder="Ej: Mbappé, Dembélé">
+        <label>Goleadores ${eqVisitante.nombre}</label>
+        <input type="text" class="input-goles-visitante" placeholder="Ej: Yamal">
+      </div>
+
+      <button class="modal-guardar btn-guardar-semi">Guardar resultado</button>
+    `;
+
+    const inputLocal = card.querySelector(".input-marcador-local");
+    const inputVisitante = card.querySelector(".input-marcador-visitante");
+    const bloqueEmpate = card.querySelector(".bloque-empate-admin");
+    const bloqueEt = card.querySelector(".bloque-ganador-et");
+    const bloquePenales = card.querySelector(".bloque-ganador-penales");
+
+    function refrescar() {
+      const empatado = Number(inputLocal.value) === Number(inputVisitante.value);
+      bloqueEmpate.style.display = empatado ? "block" : "none";
+      bloqueEt.style.display = empatado && etAdmin[partido.id] === true ? "block" : "none";
+      bloquePenales.style.display = empatado && etAdmin[partido.id] === false ? "block" : "none";
+
+      card.querySelector(".btn-et-si").classList.toggle("activo", etAdmin[partido.id] === true);
+      card.querySelector(".btn-et-no").classList.toggle("activo", etAdmin[partido.id] === false);
+      card.querySelector(".btn-ganador-et-local").classList.toggle("activo", penalesAdmin[partido.id + "-et"] === "local");
+      card.querySelector(".btn-ganador-et-visitante").classList.toggle("activo", penalesAdmin[partido.id + "-et"] === "visitante");
+      card.querySelector(".btn-ganador-pen-local").classList.toggle("activo", penalesAdmin[partido.id] === "local");
+      card.querySelector(".btn-ganador-pen-visitante").classList.toggle("activo", penalesAdmin[partido.id] === "visitante");
+    }
+
+    inputLocal.addEventListener("input", refrescar);
+    inputVisitante.addEventListener("input", refrescar);
+
+    card.querySelector(".btn-et-si").addEventListener("click", () => { etAdmin[partido.id] = true; refrescar(); });
+    card.querySelector(".btn-et-no").addEventListener("click", () => { etAdmin[partido.id] = false; refrescar(); });
+    card.querySelector(".btn-ganador-et-local").addEventListener("click", () => { penalesAdmin[partido.id + "-et"] = "local"; refrescar(); });
+    card.querySelector(".btn-ganador-et-visitante").addEventListener("click", () => { penalesAdmin[partido.id + "-et"] = "visitante"; refrescar(); });
+    card.querySelector(".btn-ganador-pen-local").addEventListener("click", () => { penalesAdmin[partido.id] = "local"; refrescar(); });
+    card.querySelector(".btn-ganador-pen-visitante").addEventListener("click", () => { penalesAdmin[partido.id] = "visitante"; refrescar(); });
+
+    card.querySelector(".btn-guardar-semi").addEventListener("click", async () => {
+      const local = Number(inputLocal.value) || 0;
+      const visitante = Number(inputVisitante.value) || 0;
+      const empatado = local === visitante;
+
+      if (empatado && etAdmin[partido.id] === null) {
+        alert("Indica si el partido se definió en tiempo extra o en penales.");
+        return;
+      }
+      if (empatado && etAdmin[partido.id] === true && !penalesAdmin[partido.id + "-et"]) {
+        alert("Selecciona quién ganó en tiempo extra.");
+        return;
+      }
+      if (empatado && etAdmin[partido.id] === false && !penalesAdmin[partido.id]) {
+        alert("Selecciona quién ganó en penales.");
+        return;
+      }
+
+      const goleadoresLocal = card.querySelector(".input-goles-local").value
+        .split(",").map((n) => n.trim()).filter(Boolean);
+      const goleadoresVisitante = card.querySelector(".input-goles-visitante").value
+        .split(",").map((n) => n.trim()).filter(Boolean);
+
+      const resultado = {
+        marcador: { local, visitante },
+        goleadoresLocal,
+        goleadoresVisitante,
+        vaTiempoExtra: empatado ? etAdmin[partido.id] : null,
+        ganadorTiempoExtra: empatado && etAdmin[partido.id] === true ? penalesAdmin[partido.id + "-et"] : null,
+        ganadorPenales: empatado && etAdmin[partido.id] === false ? penalesAdmin[partido.id] : null,
+      };
+
+      try {
+        await update(ref(db), {
+          [`resultados/semis/${partido.id}`]: resultado,
+        });
+        alert(`Resultado de ${partido.id} guardado correctamente`);
+      } catch (error) {
+        console.error("Error al guardar resultado de semis:", error);
+        alert("Error al guardar el resultado de semis");
+      }
+    });
+
+    cont.appendChild(card);
+  });
+}
+crearAdminSemis();
