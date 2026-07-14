@@ -1215,7 +1215,9 @@ nav::after{
   font-size: 12px;
   font-style: italic;
 }
-
+.neutro {
+  color: rgba(255, 255, 255, 0.4);
+}
 @media (max-width: 800px) {
   .puntaje-fila {
     grid-template-columns: 1fr 50px 50px;

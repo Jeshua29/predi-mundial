@@ -864,7 +864,7 @@ function calcularPuntosPartidoSemi(prediccion, resultado) {
   const marcadorExacto =
     prediccion.marcador.local === resultado.marcador.local &&
     prediccion.marcador.visitante === resultado.marcador.visitante;
-  puntos += marcadorExacto ? 5 : -5;
+  puntos += marcadorExacto ? 5 : 0;
 
   const golesPredichos = [
     ...(prediccion.goleadoresLocal || []),
@@ -877,7 +877,7 @@ function calcularPuntosPartidoSemi(prediccion, resultado) {
 
   golesPredichos.forEach((jugador) => {
     const acerto = golesReales.includes(jugador.trim().toLowerCase());
-    puntos += acerto ? 2 : -2;
+    puntos += acerto ? 2 : -1;
   });
 
   const empatoPrediccion = prediccion.marcador.local === prediccion.marcador.visitante;
@@ -889,11 +889,11 @@ function calcularPuntosPartidoSemi(prediccion, resultado) {
     puntos += prediccion.vaTiempoExtra === etDecisivoReal ? 2 : -2;
 
     if (prediccion.vaTiempoExtra === true && etDecisivoReal) {
-      puntos += prediccion.ganadorTiempoExtra === resultado.ganadorTiempoExtra ? 3 : -3;
+      puntos += prediccion.ganadorTiempoExtra === resultado.ganadorTiempoExtra ? 3 : 0;
     }
 
     if (prediccion.vaTiempoExtra === false && empatoReal && !etDecisivoReal) {
-      puntos += prediccion.ganadorPenales === resultado.ganadorPenales ? 3 : -3;
+      puntos += prediccion.ganadorPenales === resultado.ganadorPenales ? 3 : 0;
     }
   }
 
