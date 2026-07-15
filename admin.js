@@ -4,6 +4,8 @@ import { semis } from "./bracket-data.js";
 import {
   ref,
   update,
+  get,
+  child,
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 const claveAdmin = prompt("Clave de Administrador");
@@ -508,4 +510,48 @@ function crearAdminSemis() {
     cont.appendChild(card);
   });
 }
+async function crearAjustesManuales() {
+  const cont = document.getElementById("ajustesContainer");
+  if (!cont) return;
+  cont.innerHTML = "";
+
+  const snapshot = await get(child(ref(db), "predicciones"));
+  if (!snapshot.exists()) return;
+
+  const usuarios = snapshot.val();
+  const ajustesSnapshot = await get(child(ref(db), "resultados/ajustes"));
+  const ajustesActuales = ajustesSnapshot.exists() ? ajustesSnapshot.val() : {};
+
+  for (let usuarioKey in usuarios) {
+    const nombre = usuarios[usuarioKey].nombre || usuarioKey;
+
+    const card = document.createElement("div");
+    card.className = "bracket-match ajuste-card";
+
+    card.innerHTML = `
+      <div class="match-header"><span>${nombre}</span></div>
+      <div class="modal-marcador-inputs">
+        <input type="number" class="input-ajuste" value="${ajustesActuales[usuarioKey] || 0}" style="width:80px;">
+      </div>
+      <button class="modal-guardar btn-guardar-ajuste">Guardar ajuste</button>
+    `;
+
+    card.querySelector(".btn-guardar-ajuste").addEventListener("click", async () => {
+      const valor = Number(card.querySelector(".input-ajuste").value) || 0;
+      try {
+        await update(ref(db), {
+          [`resultados/ajustes/${usuarioKey}`]: valor,
+        });
+        alert(`Ajuste de ${nombre} guardado: ${valor} pts`);
+      } catch (error) {
+        console.error("Error al guardar ajuste:", error);
+        alert("Error al guardar el ajuste");
+      }
+    });
+
+    cont.appendChild(card);
+  }
+}
+
+crearAjustesManuales();
 crearAdminSemis();

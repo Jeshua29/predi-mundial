@@ -939,6 +939,7 @@ async function cargarRanking() {
   const prediccionesUsuarios = prediccionesSnapshot.val();
   const resultados = resultadosSnapshot.val();
   const ranking = [];
+  const ajustes = resultados.ajustes || {};
 
   for (let usuarioKey in prediccionesUsuarios) {
     const prediccionUsuario = prediccionesUsuarios[usuarioKey];
@@ -980,7 +981,7 @@ async function cargarRanking() {
         resultados.semis,
       );
     }
-
+    puntosTotales += ajustes[usuarioKey] || 0;
     ranking.push({
       nombre: prediccionUsuario.nombre,
       puntos: Math.max(0, puntosTotales),
