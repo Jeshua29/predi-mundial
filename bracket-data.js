@@ -92,3 +92,11 @@ export const semis = [
     cierre: "2026-07-15T13:00:00-06:00",
   },
 ];
+
+export const tercerPuesto = [
+  { id: "M103", equipos: ["fr", "eng"], cierre: "2026-07-18T15:00:00-06:00" },
+];
+
+export const final = [
+  { id: "M104", equipos: ["es", "ar"], cierre: "2026-07-19T13:00:00-06:00" },
+];

@@ -1,5 +1,5 @@
 import { db } from "./firebase.js";
-import { semis } from "./bracket-data.js";
+import { semis, tercerPuesto, final } from "./bracket-data.js";
 
 import {
   ref,
@@ -369,12 +369,14 @@ document
 let etAdmin = {};
 let penalesAdmin = {};
 
-function crearAdminSemis() {
+  function crearAdminSemis() {
   const cont = document.getElementById("semisAdminContainer");
   if (!cont) return;
   cont.innerHTML = "";
 
-  semis.forEach((partido) => {
+  const partidosDetalle = [...semis, ...tercerPuesto, ...final];
+
+  partidosDetalle.forEach((partido) => {
     const [codigoLocal, codigoVisitante] = partido.equipos;
     const eqLocal = obtenerEquipoPorCodigo(codigoLocal);
     const eqVisitante = obtenerEquipoPorCodigo(codigoVisitante);

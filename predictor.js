@@ -1,5 +1,6 @@
 import { db } from "./firebase.js";
-import { dieciseisavos, octavos, cuartos, semis } from "./bracket-data.js";
+import { dieciseisavos, octavos, cuartos, semis, tercerPuesto, final  } from "./bracket-data.js";
+
 
 import {
   ref,
@@ -12,6 +13,7 @@ const usuario = localStorage.getItem("nombreUsuario");
 
 const fechaCierre = new Date("2026-06-11T13:00:00-06:00");
 const fechaCierreCuartos = new Date("2026-07-09T14:10:00-06:00");
+const partidosDetalle = [...semis, ...tercerPuesto, ...final];
 
 if (usuario === null) {
   window.location.href = "index.html";
@@ -26,7 +28,7 @@ function prediccionesCuartosCerradas() {
 }
 
 function estaSemiCerrada(matchId) {
-  const partido = semis.find((s) => s.id === matchId);
+  const partido = partidosDetalle.find((s) => s.id === matchId);
   return new Date() >= new Date(partido.cierre);
 }
 
@@ -566,9 +568,9 @@ function renderBracket() {
     { titulo: "Octavos", partidos: octavos, tipo: "locked" },
     { titulo: "Cuartos", partidos: cuartos, tipo: "locked" },
     { titulo: "Semifinales", partidos: semis, tipo: "semis" },
-    { titulo: "Final", partidos: [], tipo: "final" },
+    { titulo: "Tercer Puesto", partidos: tercerPuesto, tipo: "semis" },
+    { titulo: "Final", partidos: final, tipo: "semis" },
   ];
-
   columnas.forEach((col) => {
     const colEl = document.createElement("div");
     colEl.className = "bracket-col";
@@ -590,13 +592,6 @@ function renderBracket() {
       });
     }
 
-    if (col.tipo === "final") {
-      const lockCard = document.createElement("div");
-      lockCard.className = "bracket-final-lock";
-      lockCard.innerHTML = `<span>🔒</span><small>Se habilita al definir semifinales</small>`;
-      colEl.appendChild(lockCard);
-    }
-
     wrapper.appendChild(colEl);
   });
 
@@ -609,7 +604,7 @@ function renderBracket() {
 
 function abrirModalSemis(matchId) {
   matchIdActivo = matchId;
-  const partido = semis.find((s) => s.id === matchId);
+  const partido = partidosDetalle.find((s) => s.id === matchId);
   const [codigoLocal, codigoVisitante] = partido.equipos;
   const eqLocal = obtenerEquipoPorCodigo(codigoLocal);
   const eqVisitante = obtenerEquipoPorCodigo(codigoVisitante);
